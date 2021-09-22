@@ -19,8 +19,11 @@ package com.vanniktech.emoji;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+
 import androidx.annotation.NonNull;
+
 import com.vanniktech.emoji.emoji.Emoji;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;

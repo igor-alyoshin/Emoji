@@ -1,0 +1,17 @@
+object Versions {
+    val kotlinVersion = "1.5.30"
+    val fastAdapterVersion = "5.4.1"
+    val balloonVersion = "1.3.6"
+    val coroutinesVersion = "1.5.1"
+    val materialVersion = "1.3.0"
+    val appcompatVersion = "1.3.0"
+    val ktxVersion = "1.6.0"
+    val recyclerViewVersion = "1.2.1"
+    val lifecycleVersion = "2.3.1"
+    val constraintLayoutVersion = "2.1.0"
+    val browserVersion = "1.3.0"
+    val multidexVersion = "2.0.1"
+    val timberVersion = "5.0.1"
+    val navVersion = "2.3.5"
+    val roomVersion = "2.3.0"
+}

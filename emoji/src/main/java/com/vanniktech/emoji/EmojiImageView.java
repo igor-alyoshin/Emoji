@@ -22,23 +22,19 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.widget.AppCompatImageView;
 import android.util.AttributeSet;
-import android.view.View;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.AppCompatImageView;
+
 import com.vanniktech.emoji.emoji.Emoji;
-import com.vanniktech.emoji.listeners.OnEmojiClickListener;
-import com.vanniktech.emoji.listeners.OnEmojiLongClickListener;
+import com.wola.android.emoji.R;
 
 public final class EmojiImageView extends AppCompatImageView {
   private static final int VARIANT_INDICATOR_PART_AMOUNT = 6;
   private static final int VARIANT_INDICATOR_PART = 5;
 
   Emoji currentEmoji;
-
-  OnEmojiClickListener clickListener;
-  OnEmojiLongClickListener longClickListener;
 
   private final Paint variantIndicatorPaint = new Paint();
   private final Path variantIndicatorPath = new Path();
@@ -47,14 +43,12 @@ public final class EmojiImageView extends AppCompatImageView {
   private final Point variantIndicatorBottomRight = new Point();
   private final Point variantIndicatorBottomLeft = new Point();
 
-  private ImageLoadingTask imageLoadingTask;
-
   private boolean hasVariants;
 
   public EmojiImageView(final Context context, final AttributeSet attrs) {
     super(context, attrs);
 
-    variantIndicatorPaint.setColor(Utils.resolveColor(context, R.attr.emojiDivider, R.color.emoji_divider));
+    variantIndicatorPaint.setColor(Utils.resolveColor(context, R.attr.emojiDivider, R.color.emoji_divider_color));
     variantIndicatorPaint.setStyle(Paint.Style.FILL);
     variantIndicatorPaint.setAntiAlias(true);
   }
@@ -92,44 +86,10 @@ public final class EmojiImageView extends AppCompatImageView {
     }
   }
 
-  @Override protected void onDetachedFromWindow() {
-    super.onDetachedFromWindow();
-
-    if (imageLoadingTask != null) {
-      imageLoadingTask.cancel(true);
-      imageLoadingTask = null;
-    }
-  }
-
-  void setEmoji(@NonNull final Emoji emoji) {
+  public void setEmoji(@NonNull final Emoji emoji) {
     if (!emoji.equals(currentEmoji)) {
-      setImageDrawable(null);
-
       currentEmoji = emoji;
       hasVariants = emoji.getBase().hasVariants();
-
-      if (imageLoadingTask != null) {
-        imageLoadingTask.cancel(true);
-      }
-
-      setOnClickListener(new OnClickListener() {
-        @Override public void onClick(final View view) {
-          if (clickListener != null) {
-            clickListener.onEmojiClick(EmojiImageView.this, currentEmoji);
-          }
-        }
-      });
-
-      setOnLongClickListener(hasVariants ? new OnLongClickListener() {
-        @Override public boolean onLongClick(final View view) {
-          longClickListener.onEmojiLongClick(EmojiImageView.this, currentEmoji);
-
-          return true;
-        }
-      } : null);
-
-      imageLoadingTask = new ImageLoadingTask(this);
-      imageLoadingTask.execute(emoji);
     }
   }
 
@@ -143,16 +103,6 @@ public final class EmojiImageView extends AppCompatImageView {
   public void updateEmoji(@NonNull final Emoji emoji) {
     if (!emoji.equals(currentEmoji)) {
       currentEmoji = emoji;
-
-      setImageDrawable(emoji.getDrawable(this.getContext()));
     }
-  }
-
-  void setOnEmojiClickListener(@Nullable final OnEmojiClickListener listener) {
-    this.clickListener = listener;
-  }
-
-  void setOnEmojiLongClickListener(@Nullable final OnEmojiLongClickListener listener) {
-    this.longClickListener = listener;
   }
 }

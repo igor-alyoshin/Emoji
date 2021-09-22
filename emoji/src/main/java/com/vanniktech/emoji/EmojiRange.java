@@ -18,7 +18,9 @@
 package com.vanniktech.emoji;
 
 import androidx.annotation.NonNull;
+
 import com.vanniktech.emoji.emoji.Emoji;
+
 
 public final class EmojiRange {
   public final int start;

@@ -17,19 +17,21 @@
 
 package com.vanniktech.emoji.emoji;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 
 @SuppressWarnings("PMD.ArrayIsStoredDirectly") public class Emoji implements Serializable {
   private static final long serialVersionUID = 3L;
@@ -87,7 +89,7 @@ import static java.util.Collections.emptyList;
     return resource;
   }
 
-  @NonNull public Drawable getDrawable(final Context context) {
+  @Nullable public Drawable getDrawable(final Context context) {
     return AppCompatResources.getDrawable(context, resource);
   }
 

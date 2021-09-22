@@ -17,12 +17,17 @@
 
 package com.vanniktech.emoji;
 
+import static com.vanniktech.emoji.Utils.checkNotNull;
+
 import android.content.Context;
 import android.text.Spannable;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.vanniktech.emoji.emoji.Emoji;
 import com.vanniktech.emoji.emoji.EmojiCategory;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -31,8 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static com.vanniktech.emoji.Utils.checkNotNull;
 
 /**
  * EmojiManager where an EmojiProvider can be installed for further usage.
@@ -196,7 +199,7 @@ import static com.vanniktech.emoji.Utils.checkNotNull;
     emojiReplacer.replaceWithImages(context, text, emojiSize, DEFAULT_EMOJI_REPLACER);
   }
 
-  EmojiCategory[] getCategories() {
+  public EmojiCategory[] getCategories() {
     verifyInstalled();
     return categories; // NOPMD
   }

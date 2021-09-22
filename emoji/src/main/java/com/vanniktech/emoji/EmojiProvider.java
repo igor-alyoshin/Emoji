@@ -18,7 +18,9 @@
 package com.vanniktech.emoji;
 
 import androidx.annotation.NonNull;
+
 import com.vanniktech.emoji.emoji.EmojiCategory;
+
 
 /**
  * Interface for a custom emoji implementation that can be used with {@link EmojiManager}.

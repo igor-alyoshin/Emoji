@@ -18,6 +18,7 @@
 package com.vanniktech.emoji;
 
 import androidx.annotation.NonNull;
+
 import com.vanniktech.emoji.emoji.Emoji;
 
 /**
@@ -37,7 +38,8 @@ public interface VariantEmoji {
    *                     the passed emoji should be returned.
    * @since 0.5.0
    */
-  @NonNull Emoji getVariant(Emoji desiredEmoji);
+  @NonNull
+  Emoji getVariant(Emoji desiredEmoji);
 
   /**
    * Should add the emoji to the variants. After calling this method, {@link #getVariant(Emoji)}

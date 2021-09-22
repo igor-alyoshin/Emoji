@@ -42,7 +42,7 @@ public final class RepeatListener implements View.OnTouchListener {
   };
 
   public RepeatListener(final long initialInterval, final long normalInterval,
-      final View.OnClickListener clickListener) {
+                        final View.OnClickListener clickListener) {
     if (clickListener == null) {
       throw new IllegalArgumentException("null runnable");
     }

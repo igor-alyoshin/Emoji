@@ -17,12 +17,12 @@
 
 package com.vanniktech.emoji;
 
+import static android.view.View.MeasureSpec.makeMeasureSpec;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,11 +31,15 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.vanniktech.emoji.emoji.Emoji;
 import com.vanniktech.emoji.listeners.OnEmojiClickListener;
-import java.util.List;
+import com.wola.android.emoji.R;
 
-import static android.view.View.MeasureSpec.makeMeasureSpec;
+import java.util.List;
 
 public final class EmojiVariantPopup {
   private static final int MARGIN = 2;
@@ -44,7 +48,8 @@ public final class EmojiVariantPopup {
   @Nullable private PopupWindow popupWindow;
 
   @Nullable final OnEmojiClickListener listener;
-  @Nullable EmojiImageView rootImageView;
+  @Nullable
+  EmojiImageView rootImageView;
 
   public EmojiVariantPopup(@NonNull final View rootView, @Nullable final OnEmojiClickListener listener) {
     this.rootView = rootView;
@@ -96,7 +101,7 @@ public final class EmojiVariantPopup {
     final LayoutInflater inflater = LayoutInflater.from(context);
 
     for (final Emoji variant : variants) {
-      final ImageView emojiImage = (ImageView) inflater.inflate(R.layout.emoji_adapter_item, imageContainer, false);
+      final ImageView emojiImage = (ImageView) inflater.inflate(R.layout.emoji_item, imageContainer, false);
       final ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) emojiImage.getLayoutParams();
       final int margin = Utils.dpToPx(context, MARGIN);
 

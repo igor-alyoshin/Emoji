@@ -21,29 +21,28 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.res.Configuration;
-import android.content.res.TypedArray;
-import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.PopupWindow;
-import android.widget.TextView;
+
 import androidx.annotation.AttrRes;
 import androidx.annotation.ColorInt;
 import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+
 import com.vanniktech.emoji.emoji.Emoji;
+
 import java.util.ArrayList;
 import java.util.List;
 
-final class Utils {
+public final class Utils {
   static final String TAG = "Utils";
 
   static final int DONT_UPDATE_FLAG = -1;
@@ -56,47 +55,21 @@ final class Utils {
     return reference;
   }
 
-  static float initTextView(final TextView textView, final AttributeSet attrs) {
-    if (!textView.isInEditMode()) {
-      EmojiManager.getInstance().verifyInstalled();
-    }
-
-    final Paint.FontMetrics fontMetrics = textView.getPaint().getFontMetrics();
-    final float defaultEmojiSize = fontMetrics.descent - fontMetrics.ascent;
-
-    final float emojiSize;
-
-    if (attrs == null) {
-      emojiSize = defaultEmojiSize;
-    } else {
-      final TypedArray a = textView.getContext().obtainStyledAttributes(attrs, R.styleable.EmojiTextView);
-
-      try {
-        emojiSize = a.getDimension(R.styleable.EmojiTextView_emojiSize, defaultEmojiSize);
-      } finally {
-        a.recycle();
-      }
-    }
-
-    textView.setText(textView.getText());
-    return emojiSize;
-  }
-
-  static int dpToPx(@NonNull final Context context, final float dp) {
+  public static int dpToPx(@NonNull final Context context, final float dp) {
     return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp,
         context.getResources().getDisplayMetrics()) + 0.5f);
   }
 
-  static int getOrientation(final Context context) {
+  public static int getOrientation(final Context context) {
     return context.getResources().getConfiguration().orientation;
   }
 
-  static int getProperWidth(final Activity activity) {
+  public static int getProperWidth(final Activity activity) {
     final Rect rect = Utils.windowVisibleDisplayFrame(activity);
     return Utils.getOrientation(activity) == Configuration.ORIENTATION_PORTRAIT ? rect.right : getScreenWidth(activity);
   }
 
-  static boolean shouldOverrideRegularCondition(@NonNull final Context context, final EditText editText) {
+  public static boolean shouldOverrideRegularCondition(@NonNull final Context context, final EditText editText) {
     if ((editText.getImeOptions() & EditorInfo.IME_FLAG_NO_EXTRACT_UI) == 0) {
       return getOrientation(context) == Configuration.ORIENTATION_LANDSCAPE;
     }
@@ -104,32 +77,32 @@ final class Utils {
     return false;
   }
 
-  static int getProperHeight(final Activity activity) {
+  public static int getProperHeight(final Activity activity) {
     return Utils.windowVisibleDisplayFrame(activity).bottom;
   }
 
-  static int getScreenWidth(@NonNull final Activity context) {
+  public static int getScreenWidth(@NonNull final Activity context) {
     return dpToPx(context, context.getResources().getConfiguration().screenWidthDp);
   }
 
-  @NonNull static Point locationOnScreen(@NonNull final View view) {
+  public @NonNull static Point locationOnScreen(@NonNull final View view) {
     final int[] location = new int[2];
     view.getLocationOnScreen(location);
     return new Point(location[0], location[1]);
   }
 
-  @NonNull static Rect windowVisibleDisplayFrame(@NonNull final Activity context) {
+  public @NonNull static Rect windowVisibleDisplayFrame(@NonNull final Activity context) {
     final Rect result = new Rect();
     context.getWindow().getDecorView().getWindowVisibleDisplayFrame(result);
     return result;
   }
 
-  static void backspace(@NonNull final EditText editText) {
+  public static void backspace(@NonNull final EditText editText) {
     final KeyEvent event = new KeyEvent(0, 0, 0, KeyEvent.KEYCODE_DEL, 0, 0, 0, 0, KeyEvent.KEYCODE_ENDCALL);
     editText.dispatchKeyEvent(event);
   }
 
-  static List<Emoji> asListWithoutDuplicates(final Emoji[] emojis) {
+  public static List<Emoji> asListWithoutDuplicates(final Emoji[] emojis) {
     final List<Emoji> result = new ArrayList<>(emojis.length);
 
     for (final Emoji emoji : emojis) {
@@ -141,7 +114,7 @@ final class Utils {
     return result;
   }
 
-  static void input(@NonNull final EditText editText, @Nullable final Emoji emoji) {
+  public static void input(@NonNull final EditText editText, @Nullable final Emoji emoji) {
     if (emoji != null) {
       final int start = editText.getSelectionStart();
       final int end = editText.getSelectionEnd();
@@ -154,7 +127,7 @@ final class Utils {
     }
   }
 
-  static Activity asActivity(@NonNull final Context context) {
+  public static Activity asActivity(@NonNull final Context context) {
     Context result = context;
 
     while (result instanceof ContextWrapper) {

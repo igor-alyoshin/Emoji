@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.AppCompatImageView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@android:id/icon"
+    android:layout_height="@dimen/emoji_tab_icon_size"
+    android:layout_width="@dimen/emoji_tab_icon_size"
+    app:tint="@color/emoji_tab_tint_color" />

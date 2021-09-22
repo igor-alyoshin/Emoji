@@ -22,7 +22,9 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.text.style.DynamicDrawableSpan;
+
 import com.vanniktech.emoji.emoji.Emoji;
+
 
 final class EmojiSpan extends DynamicDrawableSpan {
   private final float size;
