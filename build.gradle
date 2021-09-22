@@ -1,0 +1,37 @@
+buildscript {
+  ext.versions = [
+          kotlin: '1.5.30',
+  ]
+
+  repositories {
+    mavenCentral()
+    google()
+    gradlePluginPortal()
+  }
+  dependencies {
+    classpath 'com.android.tools.build:gradle:4.2.2'
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}"
+  }
+}
+
+subprojects {
+  repositories {
+    google()
+    mavenCentral()
+  }
+}
+
+ext {
+  minSdkVersion = 23
+  compileSdkVersion = 30
+  targetSdkVersion = 30
+
+  versionCode = 1
+  versionName = "1.0.0"
+}
+
+subprojects {
+  project.plugins.withId("com.android.library") {
+    project.android.buildFeatures.buildConfig = false
+  }
+}
