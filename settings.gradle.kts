@@ -1,7 +1,4 @@
 include(":app")
 include(":emoji")
 include(":emoji-ios")
-include(":emoji-google")
-include(":emoji-google-compat")
-include(":emoji-twitter")
-include(":emoji-facebook")
+rootProject.name = "Emoji"
