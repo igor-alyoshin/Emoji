@@ -1,3 +1,4 @@
+rootProject.name = "Emoji"
 include ':app'
 include ':emoji'
 include ':emoji-ios'
