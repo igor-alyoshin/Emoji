@@ -50,6 +50,7 @@ class EmojiPopup(
     private var postNotifyRecentEmojis = false
 
     var onModeChanged: ((KeyboardMode) -> Unit)? = null
+    var onAnimationComplete: (() -> Unit)? = null
 
     sealed class KeyboardMode {
         object Hidden : KeyboardMode()
@@ -167,6 +168,7 @@ class EmojiPopup(
                 emojiKeyboardView.postInLifecycle {
                     emojiKeyboardView.increasePageLimitIfNeed()
                 }
+                onAnimationComplete?.invoke()
             })
         }
     }
@@ -179,6 +181,7 @@ class EmojiPopup(
             hideAnimator = emojiKeyboardView.animateHeight(0, duration, onEnd = {
                 hideAnimator = null
                 handlePopupClosed()
+                onAnimationComplete?.invoke()
             })
         }
     }
