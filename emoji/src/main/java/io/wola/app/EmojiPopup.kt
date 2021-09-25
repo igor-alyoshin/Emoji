@@ -164,8 +164,10 @@ class EmojiPopup(
             showAnimator = emojiKeyboardView.animateHeight(keyboardHeight, duration, onEnd = {
                 showAnimator = null
                 editText?.requestFocus()
-                emojiKeyboardView.postInLifecycle {
-                    emojiKeyboardView.increasePageLimitIfNeed()
+                if (mode == KeyboardMode.Emoji) {
+                    emojiKeyboardView.postInLifecycle {
+                        emojiKeyboardView.increasePageLimitIfNeed()
+                    }
                 }
                 onAnimationComplete?.invoke()
             })
