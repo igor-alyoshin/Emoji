@@ -104,6 +104,7 @@ fun ConstraintLayout.animateHeight(
     val currentHeight = measuredHeight
     if (measuredHeight == targetHeight) {
         updateLayoutParams { height = targetHeight }
+        onEnd.invoke()
         return null
     }
     val animator = ValueAnimator.ofInt(currentHeight, targetHeight)
