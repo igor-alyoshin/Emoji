@@ -173,7 +173,7 @@ class EmojiPopup(
     }
 
     fun setupWith(editText: EditText) {
-
+        this.editText = editText
     }
 
     fun collapse() {
