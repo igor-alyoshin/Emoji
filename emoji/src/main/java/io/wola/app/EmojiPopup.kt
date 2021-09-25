@@ -9,12 +9,9 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.GenericItem
-import com.vanniktech.emoji.EmojiManager
-import com.vanniktech.emoji.EmojiVariantPopup
-import com.vanniktech.emoji.RecentEmojiManager
+import com.vanniktech.emoji.*
 import com.vanniktech.emoji.Utils.backspace
 import com.vanniktech.emoji.Utils.input
-import com.vanniktech.emoji.VariantEmojiManager
 import com.vanniktech.emoji.emoji.Emoji
 import com.vanniktech.emoji.emoji.EmojiCategory
 import com.wola.android.emoji.R
@@ -22,8 +19,7 @@ import timber.log.Timber
 
 class EmojiPopup(
     private val activity: Activity,
-    private val emojiKeyboardView: EmojiKeyboardView,
-    private val editText: EditText
+    private val emojiKeyboardView: EmojiKeyboardView
 ) {
 
     private val preferences =
@@ -42,6 +38,8 @@ class EmojiPopup(
     private val expanded get() = emojiKeyboardView.measuredHeight > 0 && hideAnimator == null
     private val emojiWidth =
         activity.resources.getDimensionPixelSize(R.dimen.emoji_grid_view_column_width)
+
+    private var editText: EditText? = null
 
     private var hideAnimator: Animator? = null
     private var showAnimator: Animator? = null
@@ -70,7 +68,7 @@ class EmojiPopup(
                 setup(
                     numOfColumns = numOfColumns,
                     onEmojiClick = { item ->
-                        input(editText, item.emoji)
+                        editText?.input(item.emoji)
                         updateRecentEmojis(this@apply, item.emoji)
                     },
                     onEmojiLongClick = { v, item ->
@@ -81,7 +79,7 @@ class EmojiPopup(
         }
         variantPopup =
             EmojiVariantPopup(emojiKeyboardView.rootView) { view, emoji ->
-                input(editText, emoji)
+                editText?.input(emoji)
                 view.setEmoji(emoji)
                 view.setImageDrawable(emoji.getDrawable(activity))
                 variantEmoji.addVariant(emoji)
@@ -92,7 +90,7 @@ class EmojiPopup(
         emojiKeyboardView.setupPages(adapter, initialPosition)
         emojiKeyboardView.setupSizes(keyboardHeight)
         emojiKeyboardView.setOnBackspaceClick {
-            backspace(editText)
+            editText?.backspace()
         }
         emojiKeyboardView.onPageChange = { position ->
             if (position == RECENT_EMOJIS_POSITION && postNotifyRecentEmojis) {
@@ -127,6 +125,7 @@ class EmojiPopup(
     }
 
     fun release() {
+        editText = null
         onModeChanged = null
         handlePopupClosed()
     }
@@ -164,13 +163,17 @@ class EmojiPopup(
             }
             showAnimator = emojiKeyboardView.animateHeight(keyboardHeight, duration, onEnd = {
                 showAnimator = null
-                editText.requestFocus()
+                editText?.requestFocus()
                 emojiKeyboardView.postInLifecycle {
                     emojiKeyboardView.increasePageLimitIfNeed()
                 }
                 onAnimationComplete?.invoke()
             })
         }
+    }
+
+    fun setupWith(editText: EditText) {
+
     }
 
     fun collapse() {
@@ -201,7 +204,7 @@ class EmojiPopup(
         when (mode) {
             KeyboardMode.Emoji -> {
                 emojiKeyboardView.alpha = 1f
-                editText.let {
+                editText?.let {
                     it.showSoftInputOnFocus = false
                     activity.hideKeyboard(it)
                 }
@@ -209,11 +212,11 @@ class EmojiPopup(
             }
             KeyboardMode.Soft -> {
                 emojiKeyboardView.alpha = 1f
-                editText.let { activity.showKeyboard(it) }
+                editText?.let { activity.showKeyboard(it) }
             }
             KeyboardMode.Hidden -> {
                 emojiKeyboardView.alpha = if (oldMode == KeyboardMode.Soft) 0f else 1f
-                editText.showSoftInputOnFocus = true
+                editText?.showSoftInputOnFocus = true
                 if (expanded) collapse()
             }
         }
@@ -238,6 +241,14 @@ class EmojiPopup(
         } else {
             postNotifyRecentEmojis = true
         }
+    }
+
+    private fun EditText.input(emoji: Emoji) {
+        input(this, emoji)
+    }
+
+    private fun EditText.backspace() {
+        Utils.backspace(this)
     }
 
     companion object {
