@@ -17,10 +17,7 @@ import com.vanniktech.emoji.emoji.EmojiCategory
 import com.wola.android.emoji.R
 import timber.log.Timber
 
-class EmojiPopup(
-    private val activity: Activity,
-    private val emojiKeyboardView: EmojiKeyboardView
-) {
+class EmojiPopup(private val activity: Activity) {
 
     private val preferences =
         activity.applicationContext.getSharedPreferences("emoji", MODE_PRIVATE)
@@ -33,13 +30,15 @@ class EmojiPopup(
             tabIconResId = R.drawable.emoji_recent,
             emojis = recentEmoji.recentEmojis.map { EmojiItem(it, variantEmoji) }
         )
-    private val categories: List<EmojiCategory>
+    private var categories = listOf<EmojiCategory>()
 
-    private val expanded get() = emojiKeyboardView.measuredHeight > 0 && hideAnimator == null
+    private val expanded
+        get() = (emojiKeyboardView?.measuredHeight ?: 0) > 0 && hideAnimator == null
     private val emojiWidth =
         activity.resources.getDimensionPixelSize(R.dimen.emoji_grid_view_column_width)
 
     private var editText: EditText? = null
+    private var emojiKeyboardView: EmojiKeyboardView? = null
 
     private var hideAnimator: Animator? = null
     private var showAnimator: Animator? = null
@@ -56,7 +55,13 @@ class EmojiPopup(
         object Emoji : KeyboardMode()
     }
 
-    init {
+    fun setupWith(editText: EditText, emojiKeyboardView: EmojiKeyboardView) {
+        this.editText = editText
+        this.emojiKeyboardView = emojiKeyboardView
+        init(editText, emojiKeyboardView)
+    }
+
+    fun init(editText: EditText, emojiKeyboardView: EmojiKeyboardView) {
         emojiKeyboardView.maxHeight = 0
         categories = EmojiManager.getInstance().categories.toList()
         val categoryItems: List<GenericItem> = categories.map { category ->
@@ -68,8 +73,8 @@ class EmojiPopup(
                 setup(
                     numOfColumns = numOfColumns,
                     onEmojiClick = { item ->
-                        editText?.input(item.emoji)
-                        updateRecentEmojis(this@apply, item.emoji)
+                        editText.input(item.emoji)
+                        updateRecentEmojis(this@apply, emojiKeyboardView, item.emoji)
                     },
                     onEmojiLongClick = { v, item ->
                         variantPopup?.show(v, item.emoji)
@@ -79,18 +84,18 @@ class EmojiPopup(
         }
         variantPopup =
             EmojiVariantPopup(emojiKeyboardView.rootView) { view, emoji ->
-                editText?.input(emoji)
+                editText.input(emoji)
                 view.setEmoji(emoji)
                 view.setImageDrawable(emoji.getDrawable(activity))
                 variantEmoji.addVariant(emoji)
-                updateRecentEmojis(adapter, emoji)
+                updateRecentEmojis(adapter, emojiKeyboardView, emoji)
                 variantPopup?.dismiss()
             }
         val initialPosition = if (recentEmoji.recentEmojis.isEmpty()) 1 else RECENT_EMOJIS_POSITION
         emojiKeyboardView.setupPages(adapter, initialPosition)
         emojiKeyboardView.setupSizes(keyboardHeight)
         emojiKeyboardView.setOnBackspaceClick {
-            editText?.backspace()
+            editText.backspace()
         }
         emojiKeyboardView.onPageChange = { position ->
             if (position == RECENT_EMOJIS_POSITION && postNotifyRecentEmojis) {
@@ -112,7 +117,7 @@ class EmojiPopup(
                     saveKeyboardHeight(height)
                     emojiKeyboardView.setupSizes(height)
                     expand()
-                    if (mode == KeyboardMode.Hidden) setMode(KeyboardMode.Soft)
+                    setMode(KeyboardMode.Soft)
                 }
                 val newInsets = if (imeBottom > 0) {
                     insets.removeGlobalBottomInsets(keyboardHeight)
@@ -125,19 +130,21 @@ class EmojiPopup(
     }
 
     fun release() {
+        activity.window?.let { window ->
+            ViewCompat.setOnApplyWindowInsetsListener(window.decorView, null)
+        }
         editText = null
+        emojiKeyboardView = null
         onModeChanged = null
         handlePopupClosed()
     }
 
     fun toggle() {
         if (expanded) {
-            editText.let {
-                if (mode == KeyboardMode.Soft) {
-                    setMode(KeyboardMode.Emoji)
-                } else {
-                    setMode(KeyboardMode.Soft)
-                }
+            if (mode == KeyboardMode.Soft) {
+                setMode(KeyboardMode.Emoji)
+            } else {
+                setMode(KeyboardMode.Soft)
             }
         } else {
             setMode(KeyboardMode.Emoji)
@@ -152,21 +159,21 @@ class EmojiPopup(
         return false
     }
 
-    fun expand() {
+    fun expand() = emojiKeyboardView?.let { view ->
         if (showAnimator == null) {
             hideAnimator?.cancel()
             hideAnimator = null
-            val duration = if (keyboardHeight > emojiKeyboardView.measuredHeight) {
-                ANIMATION_DURATION * (keyboardHeight - emojiKeyboardView.measuredHeight) / keyboardHeight
+            val duration = if (keyboardHeight > view.measuredHeight) {
+                ANIMATION_DURATION * (keyboardHeight - view.measuredHeight) / keyboardHeight
             } else {
-                ANIMATION_DURATION * emojiKeyboardView.measuredHeight / keyboardHeight
+                ANIMATION_DURATION * view.measuredHeight / keyboardHeight
             }
-            showAnimator = emojiKeyboardView.animateHeight(keyboardHeight, duration, onEnd = {
+            showAnimator = view.animateHeight(keyboardHeight, duration, onEnd = {
                 showAnimator = null
                 editText?.requestFocus()
                 if (mode == KeyboardMode.Emoji) {
-                    emojiKeyboardView.postInLifecycle {
-                        emojiKeyboardView.increasePageLimitIfNeed()
+                    view.postInLifecycle {
+                        view.increasePageLimitIfNeed()
                     }
                 }
                 onAnimationComplete?.invoke()
@@ -174,16 +181,12 @@ class EmojiPopup(
         }
     }
 
-    fun setupWith(editText: EditText) {
-        this.editText = editText
-    }
-
-    fun collapse() {
+    fun collapse() = emojiKeyboardView?.let { view ->
         if (hideAnimator == null) {
             showAnimator?.cancel()
             showAnimator = null
-            val duration = ANIMATION_DURATION * emojiKeyboardView.measuredHeight / keyboardHeight
-            hideAnimator = emojiKeyboardView.animateHeight(0, duration, onEnd = {
+            val duration = ANIMATION_DURATION * view.measuredHeight / keyboardHeight
+            hideAnimator = view.animateHeight(0, duration, onEnd = {
                 hideAnimator = null
                 handlePopupClosed()
                 onAnimationComplete?.invoke()
@@ -205,18 +208,18 @@ class EmojiPopup(
         }
         when (mode) {
             KeyboardMode.Emoji -> {
-                emojiKeyboardView.alpha = 1f
+                emojiKeyboardView?.alpha = 1f
                 editText?.let {
                     activity.hideKeyboard(it)
                 }
                 expand()
             }
             KeyboardMode.Soft -> {
-                emojiKeyboardView.alpha = 1f
+                emojiKeyboardView?.alpha = 1f
                 editText?.let { activity.showKeyboard(it) }
             }
             KeyboardMode.Hidden -> {
-                emojiKeyboardView.alpha = if (oldMode == KeyboardMode.Soft) 0f else 1f
+                emojiKeyboardView?.alpha = if (oldMode == KeyboardMode.Soft) 0f else 1f
                 if (expanded) collapse()
             }
         }
@@ -233,7 +236,11 @@ class EmojiPopup(
         preferences.edit().putInt(KEY_KEYBOARD_HEIGHT, height).apply()
     }
 
-    private fun updateRecentEmojis(adapter: FastAdapter<*>, emoji: Emoji) {
+    private fun updateRecentEmojis(
+        adapter: FastAdapter<*>,
+        emojiKeyboardView: EmojiKeyboardView,
+        emoji: Emoji
+    ) {
         recentEmoji.addEmoji(emoji)
         recentEmojisPageItem.emojis = recentEmoji.recentEmojis.map { EmojiItem(it, variantEmoji) }
         if (emojiKeyboardView.currentItem > RECENT_EMOJIS_POSITION) {
@@ -248,7 +255,7 @@ class EmojiPopup(
     }
 
     private fun EditText.backspace() {
-        Utils.backspace(this)
+        backspace(this)
     }
 
     companion object {
