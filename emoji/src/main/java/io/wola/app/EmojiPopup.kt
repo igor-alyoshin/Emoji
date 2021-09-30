@@ -207,7 +207,6 @@ class EmojiPopup(
             KeyboardMode.Emoji -> {
                 emojiKeyboardView.alpha = 1f
                 editText?.let {
-                    it.showSoftInputOnFocus = false
                     activity.hideKeyboard(it)
                 }
                 expand()
@@ -218,7 +217,6 @@ class EmojiPopup(
             }
             KeyboardMode.Hidden -> {
                 emojiKeyboardView.alpha = if (oldMode == KeyboardMode.Soft) 0f else 1f
-                editText?.showSoftInputOnFocus = true
                 if (expanded) collapse()
             }
         }
