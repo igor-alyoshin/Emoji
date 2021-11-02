@@ -24,11 +24,19 @@ import com.mikepenz.fastadapter.IItemVHFactory
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil
 import com.mikepenz.fastadapter.listeners.OnCreateViewHolderListener
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlin.math.max
+
+fun View.postDelayedInLifecycle(
+    durationMillis: Long,
+    dispatcher: CoroutineDispatcher = Dispatchers.Main,
+    block: () -> Unit
+): Job? = findViewTreeLifecycleOwner()?.let { lifecycleOwner ->
+    lifecycleOwner.lifecycle.coroutineScope.launch(dispatcher) {
+        delay(durationMillis)
+        block()
+    }
+}
 
 fun FastAdapter<*>.notifyItemChanged(item: GenericItem) {
     val index = getPosition(item.identifier)
