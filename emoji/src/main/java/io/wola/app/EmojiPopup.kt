@@ -1,16 +1,10 @@
 package io.wola.app
 
-import android.animation.Animator
-import android.animation.AnimatorSet
-import android.animation.ObjectAnimator
 import android.app.Activity
 import android.content.Context.MODE_PRIVATE
 import android.content.res.Resources
-import android.view.View
 import android.view.ViewPropertyAnimator
 import android.widget.EditText
-import androidx.core.animation.doOnEnd
-import androidx.core.animation.doOnStart
 import androidx.core.view.WindowInsetsCompat
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.GenericItem
@@ -65,11 +59,8 @@ class EmojiPopup(private val activity: Activity) {
     }
 
     fun onInsetsApplied(insets: WindowInsetsCompat): WindowInsetsCompat {
-        val imeBottom = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
-        val navigationBottom =
-            insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
-        val height = imeBottom - navigationBottom
-        if (imeBottom == 0 && mode == KeyboardMode.Soft) {
+        val height = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+        if (height == 0 && mode == KeyboardMode.Soft) {
             setMode(KeyboardMode.Hidden)
         } else if (height > 0) {
             keyboardHeight = height
@@ -78,7 +69,7 @@ class EmojiPopup(private val activity: Activity) {
             expand()
             setMode(KeyboardMode.Soft)
         }
-        val newInsets = if (imeBottom > 0) {
+        val newInsets = if (height > 0) {
             insets.removeGlobalBottomInsets(keyboardHeight)
         } else {
             insets
