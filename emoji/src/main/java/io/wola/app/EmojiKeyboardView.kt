@@ -28,8 +28,11 @@ class EmojiKeyboardView(context: Context, attrs: AttributeSet? = null) :
     var onPageChange: ((Int) -> Unit)? = null
 
     fun setupSizes(keyboardHeight: Int) {
-        emojiViewPager.updateLayoutParams {
-            height = keyboardHeight - tabHeight - dividerHeight
+        val targetHeight = keyboardHeight - tabHeight - dividerHeight
+        if (emojiViewPager.layoutParams?.height != targetHeight) {
+            emojiViewPager.updateLayoutParams {
+                height = targetHeight
+            }
         }
     }
 

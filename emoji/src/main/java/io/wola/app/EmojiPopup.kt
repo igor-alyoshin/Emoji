@@ -1,10 +1,16 @@
 package io.wola.app
 
 import android.animation.Animator
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
 import android.app.Activity
 import android.content.Context.MODE_PRIVATE
 import android.content.res.Resources
+import android.view.View
+import android.view.ViewPropertyAnimator
 import android.widget.EditText
+import androidx.core.animation.doOnEnd
+import androidx.core.animation.doOnStart
 import androidx.core.view.WindowInsetsCompat
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.GenericItem
@@ -30,21 +36,21 @@ class EmojiPopup(private val activity: Activity) {
         )
     private var categories = listOf<EmojiCategory>()
 
-    private val expanded get() = (emojiKeyboardView.measuredHeight) > 0 && hideAnimator == null
+    private val expanded get() = emojiKeyboardView.translationY == 0f && hideAnimator == null
     private val emojiWidth =
         activity.resources.getDimensionPixelSize(R.dimen.emoji_grid_view_column_width)
 
     private lateinit var editText: EditText
     private lateinit var emojiKeyboardView: EmojiKeyboardView
 
-    private var hideAnimator: Animator? = null
-    private var showAnimator: Animator? = null
+    private var hideAnimator: ViewPropertyAnimator? = null
+    private var showAnimator: ViewPropertyAnimator? = null
     private var keyboardHeight = restoreKeyboardHeight()
     private var mode: KeyboardMode = KeyboardMode.Hidden
     private var postNotifyRecentEmojis = false
 
     var onModeChanged: ((KeyboardMode) -> Unit)? = null
-    var onAnimationComplete: (() -> Unit)? = null
+    var onAnimationStart: ((Int) -> Unit)? = null
 
     sealed class KeyboardMode {
         object Hidden : KeyboardMode()
@@ -81,7 +87,7 @@ class EmojiPopup(private val activity: Activity) {
     }
 
     fun init() {
-        emojiKeyboardView.maxHeight = 0
+        emojiKeyboardView.translationY = keyboardHeight.toFloat()
         categories = EmojiManager.getInstance().categories.toList()
         val categoryItems: List<GenericItem> = categories.map { category ->
             EmojiPageItem(category.icon, category.emojis.map { EmojiItem(it, variantEmoji) })
@@ -149,38 +155,44 @@ class EmojiPopup(private val activity: Activity) {
         return false
     }
 
-    fun expand() = emojiKeyboardView.let { view ->
+    fun expand() {
         if (showAnimator == null) {
             hideAnimator?.cancel()
             hideAnimator = null
-            val duration = if (keyboardHeight > view.measuredHeight) {
-                ANIMATION_DURATION * (keyboardHeight - view.measuredHeight) / keyboardHeight
+            val duration = if (keyboardHeight > emojiKeyboardView.measuredHeight) {
+                ANIMATION_DURATION * (keyboardHeight - emojiKeyboardView.measuredHeight) / keyboardHeight
             } else {
-                ANIMATION_DURATION * view.measuredHeight / keyboardHeight
+                ANIMATION_DURATION * emojiKeyboardView.measuredHeight / keyboardHeight
             }
-            showAnimator = view.animateHeight(keyboardHeight, duration, onEnd = {
-                showAnimator = null
-                editText.requestFocus()
-                if (mode == KeyboardMode.Emoji) {
-                    view.postInLifecycle {
-                        view.increasePageLimitIfNeed()
+            showAnimator = emojiKeyboardView.animate().translationY(0f)
+                .setDuration(duration)
+                .withStartAction { onAnimationStart?.invoke(keyboardHeight) }
+                .withEndAction {
+                    showAnimator = null
+                    editText.requestFocus()
+                    if (mode == KeyboardMode.Emoji) {
+                        emojiKeyboardView.postInLifecycle {
+                            emojiKeyboardView.increasePageLimitIfNeed()
+                        }
                     }
                 }
-                onAnimationComplete?.invoke()
-            })
+            showAnimator?.start()
         }
     }
 
-    fun collapse() = emojiKeyboardView.let { view ->
+    fun collapse() {
         if (hideAnimator == null) {
             showAnimator?.cancel()
             showAnimator = null
-            val duration = ANIMATION_DURATION * view.measuredHeight / keyboardHeight
-            hideAnimator = view.animateHeight(0, duration, onEnd = {
-                hideAnimator = null
-                handlePopupClosed()
-                onAnimationComplete?.invoke()
-            })
+            val duration = ANIMATION_DURATION * emojiKeyboardView.measuredHeight / keyboardHeight
+            hideAnimator = emojiKeyboardView.animate().translationY(keyboardHeight.toFloat())
+                .setDuration(duration)
+                .withStartAction { onAnimationStart?.invoke(0) }
+                .withEndAction {
+                    hideAnimator = null
+                    handlePopupClosed()
+                }
+            hideAnimator?.start()
         }
     }
 
