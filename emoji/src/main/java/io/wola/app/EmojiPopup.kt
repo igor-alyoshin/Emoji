@@ -62,11 +62,10 @@ class EmojiPopup(private val activity: Activity) {
         val height = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
         if (height == 0 && mode == KeyboardMode.Soft) {
             setMode(KeyboardMode.Hidden)
-        } else if (height > 0 && mode != KeyboardMode.Soft) {
+        } else if (height > 0) {
             keyboardHeight = height
             saveKeyboardHeight(height)
             emojiKeyboardView.setupSizes(height)
-            expand()
             setMode(KeyboardMode.Soft)
         }
         val newInsets = if (height > 0) {
@@ -130,11 +129,14 @@ class EmojiPopup(private val activity: Activity) {
         if (expanded) {
             if (mode == KeyboardMode.Soft) {
                 setMode(KeyboardMode.Emoji)
+                activity.hideKeyboard(editText)
             } else {
                 setMode(KeyboardMode.Soft)
+                activity.showKeyboard(editText)
             }
         } else {
             setMode(KeyboardMode.Emoji)
+            activity.hideKeyboard(editText)
         }
     }
 
@@ -198,24 +200,20 @@ class EmojiPopup(private val activity: Activity) {
         if (mode != newMode) {
             mode = newMode
             onModeChanged?.invoke(newMode)
-        }
-        when (mode) {
-            KeyboardMode.Emoji -> {
-                emojiKeyboardView.alpha = 1f
-                editText.let {
-                    activity.hideKeyboard(it)
+            when (newMode) {
+                KeyboardMode.Emoji -> {
+                    emojiKeyboardView.alpha = 1f
+                    expand()
                 }
-                expand()
-            }
-            KeyboardMode.Soft -> {
-                editText.let { activity.showKeyboard(it) }
-                emojiKeyboardView.postDelayedInLifecycle(100L) {
-                    emojiKeyboardView.alpha = 0f
+                KeyboardMode.Soft -> {
+                    emojiKeyboardView.postDelayedInLifecycle(100L) {
+                        emojiKeyboardView.alpha = 0f
+                    }
                 }
-            }
-            KeyboardMode.Hidden -> {
-                emojiKeyboardView.alpha = if (oldMode == KeyboardMode.Soft) 0f else 1f
-                if (expanded) collapse()
+                KeyboardMode.Hidden -> {
+                    emojiKeyboardView.alpha = if (oldMode == KeyboardMode.Soft) 0f else 1f
+                    collapse()
+                }
             }
         }
     }
