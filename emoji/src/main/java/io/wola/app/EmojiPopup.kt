@@ -62,7 +62,7 @@ class EmojiPopup(private val activity: Activity) {
         val height = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
         if (height == 0 && mode == KeyboardMode.Soft) {
             setMode(KeyboardMode.Hidden)
-        } else if (height > 0) {
+        } else if (height > 0 && mode != KeyboardMode.Soft) {
             keyboardHeight = height
             saveKeyboardHeight(height)
             emojiKeyboardView.setupSizes(height)
