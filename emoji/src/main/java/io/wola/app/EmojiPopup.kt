@@ -118,6 +118,13 @@ class EmojiPopup(private val activity: Activity) {
                 adapter.notifyItemChanged(recentEmojisPageItem)
             }
         }
+        editText.setOnClickListener {
+            if (mode == KeyboardMode.Hidden) {
+                setMode(KeyboardMode.Soft)
+                editText.requestFocus()
+                activity.showKeyboard(editText)
+            }
+        }
     }
 
     fun release() {
@@ -141,14 +148,15 @@ class EmojiPopup(private val activity: Activity) {
     }
 
     fun handleBackPressed(): Boolean {
-        if (mode == KeyboardMode.Emoji) {
+        if (mode == KeyboardMode.Emoji || mode == KeyboardMode.Soft) {
             setMode(KeyboardMode.Hidden)
+            activity.hideKeyboard(editText)
             return true
         }
         return false
     }
 
-    fun expand() {
+    private fun expand() {
         if (showAnimator == null) {
             hideAnimator?.cancel()
             hideAnimator = null
@@ -162,7 +170,6 @@ class EmojiPopup(private val activity: Activity) {
                 .withStartAction { onAnimationStart?.invoke(keyboardHeight) }
                 .withEndAction {
                     showAnimator = null
-                    editText.requestFocus()
                     if (mode == KeyboardMode.Emoji) {
                         emojiKeyboardView.postInLifecycle {
                             emojiKeyboardView.increasePageLimitIfNeed()
@@ -173,7 +180,7 @@ class EmojiPopup(private val activity: Activity) {
         }
     }
 
-    fun collapse() {
+    private fun collapse() {
         if (hideAnimator == null) {
             showAnimator?.cancel()
             showAnimator = null
@@ -209,6 +216,7 @@ class EmojiPopup(private val activity: Activity) {
                     emojiKeyboardView.postDelayedInLifecycle(100L) {
                         emojiKeyboardView.alpha = 0f
                     }
+                    expand()
                 }
                 KeyboardMode.Hidden -> {
                     emojiKeyboardView.alpha = if (oldMode == KeyboardMode.Soft) 0f else 1f
