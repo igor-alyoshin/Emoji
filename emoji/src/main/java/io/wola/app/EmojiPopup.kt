@@ -42,9 +42,10 @@ class EmojiPopup(private val activity: Activity) {
     private var keyboardHeight = restoreKeyboardHeight()
     private var mode: KeyboardMode = KeyboardMode.Hidden
     private var postNotifyRecentEmojis = false
+    private var bottomOffset = 0
 
     var onModeChanged: ((KeyboardMode) -> Unit)? = null
-    var onAnimationStart: ((Int) -> Unit)? = null
+    var onBottomChanged: ((Int) -> Unit)? = null
 
     sealed class KeyboardMode {
         object Hidden : KeyboardMode()
@@ -58,25 +59,31 @@ class EmojiPopup(private val activity: Activity) {
         init()
     }
 
-    fun onInsetsApplied(insets: WindowInsetsCompat): WindowInsetsCompat {
-        val height = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
-        if (height == 0 && mode == KeyboardMode.Soft) {
+    fun onInsetsApplied(insets: WindowInsetsCompat) {
+        bottomOffset = insets.getGlobalInsets().bottom
+        val imeHeight = insets.getImeInsets().bottom
+        val keyboardVisible = imeHeight > 0
+        if (!keyboardVisible && mode == KeyboardMode.Soft) {
             setMode(KeyboardMode.Hidden)
-        } else if (height > 0) {
-            keyboardHeight = height
-            saveKeyboardHeight(height)
-            emojiKeyboardView.setupSizes(height)
+        } else if (keyboardVisible) {
+            keyboardHeight = imeHeight
+            saveKeyboardHeight(imeHeight)
+            emojiKeyboardView.setupSizes(imeHeight)
             setMode(KeyboardMode.Soft)
         }
-        val newInsets = if (height > 0) {
-            insets.removeGlobalBottomInsets(keyboardHeight)
+        onBottomChanged?.invoke(getBottomOffset())
+    }
+
+    private fun getBottomOffset(): Int {
+        return if (mode == KeyboardMode.Emoji) {
+            bottomOffset + keyboardHeight
         } else {
-            insets
+            bottomOffset
         }
-        return newInsets
     }
 
     fun init() {
+        emojiKeyboardView.alpha = 0f
         emojiKeyboardView.translationY = keyboardHeight.toFloat()
         categories = EmojiManager.getInstance().categories.toList()
         val categoryItems: List<GenericItem> = categories.map { category ->
@@ -143,17 +150,25 @@ class EmojiPopup(private val activity: Activity) {
             }
         } else {
             setMode(KeyboardMode.Emoji)
+            onBottomChanged?.invoke(getBottomOffset())
             activity.hideKeyboard(editText)
         }
     }
 
     fun handleBackPressed(): Boolean {
-        if (mode == KeyboardMode.Emoji || mode == KeyboardMode.Soft) {
-            setMode(KeyboardMode.Hidden)
-            activity.hideKeyboard(editText)
-            return true
+        return when(mode) {
+            KeyboardMode.Emoji -> {
+                setMode(KeyboardMode.Hidden)
+                onBottomChanged?.invoke(getBottomOffset())
+                true
+            }
+            KeyboardMode.Soft -> {
+                setMode(KeyboardMode.Hidden)
+                activity.hideKeyboard(editText)
+                true
+            }
+            KeyboardMode.Hidden -> false
         }
-        return false
     }
 
     private fun expand() {
@@ -167,7 +182,6 @@ class EmojiPopup(private val activity: Activity) {
             }
             showAnimator = emojiKeyboardView.animate().translationY(0f)
                 .setDuration(duration)
-                .withStartAction { onAnimationStart?.invoke(keyboardHeight) }
                 .withEndAction {
                     showAnimator = null
                     if (mode == KeyboardMode.Emoji) {
@@ -187,7 +201,6 @@ class EmojiPopup(private val activity: Activity) {
             val duration = ANIMATION_DURATION * emojiKeyboardView.measuredHeight / keyboardHeight
             hideAnimator = emojiKeyboardView.animate().translationY(keyboardHeight.toFloat())
                 .setDuration(duration)
-                .withStartAction { onAnimationStart?.invoke(0) }
                 .withEndAction {
                     hideAnimator = null
                     handlePopupClosed()
@@ -203,7 +216,6 @@ class EmojiPopup(private val activity: Activity) {
     }
 
     private fun setMode(newMode: KeyboardMode) {
-        val oldMode = mode
         if (mode != newMode) {
             mode = newMode
             onModeChanged?.invoke(newMode)
@@ -219,7 +231,7 @@ class EmojiPopup(private val activity: Activity) {
                     expand()
                 }
                 KeyboardMode.Hidden -> {
-                    emojiKeyboardView.alpha = if (oldMode == KeyboardMode.Soft) 0f else 1f
+                    emojiKeyboardView.alpha = 0f
                     collapse()
                 }
             }

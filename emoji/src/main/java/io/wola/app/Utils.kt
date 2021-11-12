@@ -27,6 +27,10 @@ import com.mikepenz.fastadapter.listeners.OnCreateViewHolderListener
 import kotlinx.coroutines.*
 import kotlin.math.max
 
+fun WindowInsetsCompat.getGlobalInsets() = getInsets(globalMask)
+
+fun WindowInsetsCompat.getImeInsets() = getInsets(WindowInsetsCompat.Type.ime())
+
 fun View.postDelayedInLifecycle(
     durationMillis: Long,
     dispatcher: CoroutineDispatcher = Dispatchers.Main,
@@ -142,14 +146,6 @@ fun Context.showKeyboard(view: View, cursorToEnd: Boolean = true) {
     val imm = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
     imm.showSoftInput(view, 0)
     if (view is EditText && cursorToEnd) view.setSelection(view.text?.length ?: 0)
-}
-
-fun WindowInsetsCompat.removeGlobalBottomInsets(height: Int): WindowInsetsCompat {
-    val oldInsets = getInsets(globalMask)
-    val bottom = max(0, oldInsets.bottom - height)
-    return WindowInsetsCompat.Builder(this)
-        .setInsets(globalMask, Insets.of(oldInsets.left, oldInsets.top, oldInsets.right, bottom))
-        .build()
 }
 
 private val globalMask = WindowInsetsCompat.Type.ime() or WindowInsetsCompat.Type.systemBars() or
