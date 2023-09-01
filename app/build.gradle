@@ -29,6 +29,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
             shrinkResources true
             zipAlignEnabled true
+            signingConfig signingConfigs.debug
         }
     }
 }

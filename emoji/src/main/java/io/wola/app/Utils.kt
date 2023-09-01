@@ -148,5 +148,5 @@ fun Context.showKeyboard(view: View, cursorToEnd: Boolean = true) {
     if (view is EditText && cursorToEnd) view.setSelection(view.text?.length ?: 0)
 }
 
-private val globalMask = WindowInsetsCompat.Type.ime() or WindowInsetsCompat.Type.systemBars() or
-        WindowInsetsCompat.Type.systemGestures()
+private val globalMask = WindowInsetsCompat.Type.ime() or WindowInsetsCompat.Type.navigationBars() or
+        WindowInsetsCompat.Type.statusBars()
