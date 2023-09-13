@@ -136,6 +136,7 @@ class EmojiPopup(private val activity: Activity) {
 
     fun release() {
         onModeChanged = null
+        onBottomChanged = null
         handlePopupClosed()
     }
 
