@@ -140,6 +140,8 @@ class EmojiPopup(private val activity: Activity) {
         onModeChanged = null
         onBottomChanged = null
         mode = KeyboardMode.Hidden
+        emojiKeyboardView.alpha = 0f
+        collapse()
         handlePopupClosed()
     }
 
