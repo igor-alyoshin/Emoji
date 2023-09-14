@@ -60,18 +60,20 @@ class EmojiPopup(private val activity: Activity) {
     }
 
     fun onInsetsApplied(insets: WindowInsetsCompat) {
-        bottomOffset = insets.getGlobalInsets().bottom
-        val imeHeight = insets.getImeInsets().bottom
-        val keyboardVisible = imeHeight > 0
-        if (!keyboardVisible && mode == KeyboardMode.Soft) {
-            setMode(KeyboardMode.Hidden)
-        } else if (keyboardVisible) {
-            keyboardHeight = imeHeight
-            saveKeyboardHeight(imeHeight)
-            emojiKeyboardView.setupSizes(imeHeight)
-            setMode(KeyboardMode.Soft)
+        onBottomChanged?.let { onBottomChanged ->
+            bottomOffset = insets.getGlobalInsets().bottom
+            val imeHeight = insets.getImeInsets().bottom
+            val keyboardVisible = imeHeight > 0
+            if (!keyboardVisible && mode == KeyboardMode.Soft) {
+                setMode(KeyboardMode.Hidden)
+            } else if (keyboardVisible) {
+                keyboardHeight = imeHeight
+                saveKeyboardHeight(imeHeight)
+                emojiKeyboardView.setupSizes(imeHeight)
+                setMode(KeyboardMode.Soft)
+            }
+            onBottomChanged.invoke(getBottomOffset())
         }
-        onBottomChanged?.invoke(getBottomOffset())
     }
 
     private fun getBottomOffset(): Int {
